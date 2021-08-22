@@ -1,4 +1,4 @@
-from flask import Flask, send_file, request, jsonify
+from flask import Flask, send_file, request, jsonify, make_response, redirect, url_for
 from firebase_admin import credentials, firestore, initialize_app
 from dotenv import load_dotenv          # Ask Jason for the dotenv file details!
 import os
@@ -77,25 +77,29 @@ def get_ingredient():
 def get_add_ingredients():
     if request.method == "POST":
         ingredient_name = request.form.get("ingredient_name")
+        if not ingredient_name:
+            return make_response(jsonify({"message": "That ingredient name is invalid."}), 400)
         new_ingredient = {
             "name": ingredient_name,
             "img_url": get_image_url(ingredient_name),
             "amount": 1
         }
         ingredients_db.add(new_ingredient)
-        return f"Successfully added the ingredient {ingredient_name} to FireStore"
+        print(f"Successfully added {ingredient_name} to FireStore.")
+        return redirect("/api")
     # Default to GET Request since we know POST was used
     else:
         try:
             all_ingredients = []
             ingredient_iterator = ingredients_db.stream()
             for ingredient in ingredient_iterator:
-                all_ingredients.append(ingredient)
-            print(all_ingredients)
-            return f"Successfully Grabbed all ingredients from FireStore.\nHere they are:\n{all_ingredients}"
+                all_ingredients.append(ingredient.to_dict())
+            return make_response(jsonify({"message": f"Successfully Grabbed all ingredients from FireStore.", "ingredients": f"{all_ingredients}"}), 200)
 
         except Exception as e:
             return f"An error occurred: {e}"
+
+
 
 
 @app.route("/uri/")
