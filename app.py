@@ -65,6 +65,44 @@ def get_ingredient(ingredient_name):
 
     return send_file(filename, mimetype="image")
     
+@app.route("/uri/")
+def textFromURI():
+    uri = request.args.get('uri')
+    """Detects text in the file located in Google Cloud Storage or on the Web.
+    """
+    from google.cloud import vision
+    client = vision.ImageAnnotatorClient()
+    image = vision.Image()
+    image.source.image_uri = uri
+    response = client.text_detection(image=image)
+    texts = response.text_annotations
+    data = {}
+    data["ings"] = []
+    data["filter"] = []
+    print('Texts:')
+    for text in texts:
+        print('\n"{}"'.format(text.description))
+        data["ings"].append(text.description)
+
+        vertices = (['({},{})'.format(vertex.x, vertex.y)
+                    for vertex in text.bounding_poly.vertices])
+
+        print('bounds: {}'.format(','.join(vertices)))
+
+    if response.error.message:
+        raise Exception(
+            '{}\nFor more info on error messages, check: '
+            'https://cloud.google.com/apis/design/errors'.format(
+                response.error.message))
+    print()
+    splt = data['ings'][0].split('\n')
+    for ing in splt:
+        if '$' not in ing:
+            if len(ing)>5:
+                if '.' not in ing:
+                    data['filter'].append(ing)
+    print(data['filter'])
+    return "idk what"
 
 # def scrapURL(url):
 #     import requests
