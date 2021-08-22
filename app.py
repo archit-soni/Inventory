@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 from flask import Flask, send_file, request, jsonify, make_response, redirect, url_for
 from firebase_admin import credentials, firestore, initialize_app
+=======
+from flask import Flask, send_file, jsonify
+>>>>>>> 7ff0ea6ef115c5f9a2e7d58eb1600fb989ed90ae
 from dotenv import load_dotenv          # Ask Jason for the dotenv file details!
 import os
 import requests
@@ -147,9 +151,12 @@ def textFromURI():
                     data['filter'].append(ing)
     print(data['filter'])
     return jsonify(data)
+<<<<<<< HEAD
 
 def get_image_url(ingredient_name):
     return f"{SPOON_IMGURL}{IMAGE_SIZE}/{ingredient_name}"
+=======
+>>>>>>> 7ff0ea6ef115c5f9a2e7d58eb1600fb989ed90ae
 
 # def scrapURL(url):
 #     import requests
