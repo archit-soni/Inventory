@@ -1,4 +1,4 @@
-from flask import Flask, send_file
+from flask import Flask, send_file, jsonify
 from dotenv import load_dotenv          # Ask Jason for the dotenv file details!
 import os
 import requests
@@ -102,7 +102,7 @@ def textFromURI():
                 if '.' not in ing:
                     data['filter'].append(ing)
     print(data['filter'])
-    return "idk what"
+    return jsonify(data)
 
 # def scrapURL(url):
 #     import requests
