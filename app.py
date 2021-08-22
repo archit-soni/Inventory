@@ -53,7 +53,7 @@ def get_ingredient():
         return f"There was an error querying Spoonacular's API for {ingredient_name}!" 
     
     # Create a URL that represents the ingredient image 
-    image_route = f"{SPOON_IMGURL}{IMAGE_SIZE}/{response['results'][0]['image']}"
+    image_route = get_image_url(response['results'][0]['image'])
     try:
         '''Heads to the route of the ingredient and saves it locally'''
         img_response = requests.get(image_route, stream = True)
@@ -75,14 +75,24 @@ def get_ingredient():
 
 @app.route("/api", methods=["GET", "POST"])
 def get_add_ingredients():
-    if request.method == "GET":
+    if request.method == "POST":
+        ingredient_name = request.form.get("ingredient_name")
+        new_ingredient = {
+            "name": ingredient_name,
+            "img_url": get_image_url(ingredient_name),
+            "amount": 1
+        }
+        ingredients_db.add(new_ingredient)
+        return f"Successfully added the ingredient {ingredient_name} to FireStore"
+    # Default to GET Request since we know POST was used
+    else:
         try:
             all_ingredients = []
             ingredient_iterator = ingredients_db.stream()
             for ingredient in ingredient_iterator:
                 all_ingredients.append(ingredient)
             print(all_ingredients)
-            return f'Successfully Grabbed all ingredients from FireStore.\nHere they are:\n{all_ingredients}'
+            return f"Successfully Grabbed all ingredients from FireStore.\nHere they are:\n{all_ingredients}"
 
         except Exception as e:
             return f"An error occurred: {e}"
@@ -125,6 +135,9 @@ def textFromURI():
                     data['filter'].append(ing)
     print(data['filter'])
     return jsonify(data)
+
+def get_image_url(ingredient_name):
+    return f"{SPOON_IMGURL}{IMAGE_SIZE}/{ingredient_name}"
 
 # def scrapURL(url):
 #     import requests
