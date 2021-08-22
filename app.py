@@ -73,7 +73,7 @@ def get_ingredient():
     return send_file(filename, mimetype="image")
     
 
-@app.route("/api", methods=["GET", "POST"])
+@app.route("/api/ingredients", methods=["GET", "POST"])
 def get_add_ingredients():
     if request.method == "POST":
         ingredient_name = request.form.get("ingredient_name")
@@ -86,7 +86,7 @@ def get_add_ingredients():
         }
         ingredients_db.add(new_ingredient)
         print(f"Successfully added {ingredient_name} to FireStore.")
-        return redirect("/api")
+        return redirect("/api/ingredients")
     # Default to GET Request since we know POST was used
     else:
         try:
@@ -99,8 +99,16 @@ def get_add_ingredients():
         except Exception as e:
             return f"An error occurred: {e}"
 
+# @app.route("/api/ingredients/<ingredient>", methods=["PATCH"])
+# def update_ingredients(ingredient):
+#     '''Updates the ingredient'''
+#     req = request.get_json()
+#     print(req)
+#     current_ingredient = ingredients_db.where(u'name', u'==', ingredient['name']).stream()
 
+#     print(current_ingredient)
 
+#     return redirect("/api/ingredients")
 
 @app.route("/uri/")
 def textFromURI():
