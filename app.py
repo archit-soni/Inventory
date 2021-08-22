@@ -1,13 +1,20 @@
-from flask import Flask, send_file
+from flask import Flask, send_file, request, jsonify
+from firebase_admin import credentials, firestore, initialize_app
 from dotenv import load_dotenv          # Ask Jason for the dotenv file details!
 import os
 import requests
 import shutil                           # Used to save the photos locally
-
+from google.cloud import vision
 
 load_dotenv()
 
 app = Flask(__name__)
+
+# Initialize Firestore DB
+cred = credentials.Certificate("./key.json")
+default_app = initialize_app(cred)
+db = firestore.client()
+ingredients_db = db.collection("ingredients")
 
 # Configuration for spoonacular API
 API_KEY = os.getenv("API_KEY")
@@ -27,10 +34,10 @@ def index():
     #     "http://sunnymoney.weebly.com/uploads/1/9/6/4/19645963/veggie-grocery-receipt_orig.jpeg")
     return "Hello"
 
-@app.route("/api/<ingredient_name>")
-def get_ingredient(ingredient_name):
+@app.route("/api/ingredient_image")
+def get_ingredient():
     '''Query Spoonacular API using requests and Display an Image of the Ingredient'''
-
+    ingredient_name = request.args.get("food")
     # Parameters we want to provide in our ingredient search
     payload = {
         "query": ingredient_name,
@@ -65,12 +72,27 @@ def get_ingredient(ingredient_name):
 
     return send_file(filename, mimetype="image")
     
+
+@app.route("/api", methods=["GET", "POST"])
+def get_add_ingredients():
+    if request.method == "GET":
+        try:
+            all_ingredients = []
+            ingredient_iterator = ingredients_db.stream()
+            for ingredient in ingredient_iterator:
+                all_ingredients.append(ingredient)
+            print(all_ingredients)
+            return f'Successfully Grabbed all ingredients from FireStore.\nHere they are:\n{all_ingredients}'
+
+        except Exception as e:
+            return f"An error occurred: {e}"
+
+
 @app.route("/uri/")
 def textFromURI():
     uri = request.args.get('uri')
     """Detects text in the file located in Google Cloud Storage or on the Web.
     """
-    from google.cloud import vision
     client = vision.ImageAnnotatorClient()
     image = vision.Image()
     image.source.image_uri = uri
@@ -102,7 +124,7 @@ def textFromURI():
                 if '.' not in ing:
                     data['filter'].append(ing)
     print(data['filter'])
-    return "idk what"
+    return jsonify(data)
 
 # def scrapURL(url):
 #     import requests

@@ -131,3 +131,5 @@ dmypy.json
 # Custom Ignores
 spoonacular-client/
 photos/
+key.json
+vision_key.json
